@@ -153,7 +153,7 @@ int pipe_com(int count, char** arglist, int pipe_ind){
             return 0;
         }
     }
-    pid_t wait_res = waitpid(pid2, NULL, 0);
+    wait_res = waitpid(pid2, NULL, 0);
     if (wait_res == -1){
         if ((errno != ECHILD) && (errno != EINTR)){
             perror("Waitpid failed!");
