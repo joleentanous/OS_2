@@ -261,13 +261,12 @@ int contains_pipe(int count, char** arglist){
 }
 
 int prepare(void){ //signal handling for SIGINT (Ctrl-C) //should not use signal
-    struct sigaction sa;
-    sa.sa_handler = SIG_IGN;  // to ignores SIGINT for the shell itself
-    sa.sa_flags = SA_RESTART;
-    sigemptyset(&sa.sa_mask);
-    int sig = sigaction(SIGINT, &sa, NULL);
-    if (sig == -1) {
-        perror("sigaction");
+    if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
+        perror("Error - failed to change signal SIGINT handling");
+        return -1;
+    }
+    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) { // dealing with zombies based on ERAN'S TRICK
+        perror("Error - failed to change signal SIGCHLD handling");
         return -1;
     }
     return 0;
