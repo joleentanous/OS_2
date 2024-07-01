@@ -117,6 +117,14 @@ int pipe_com(int count, char** arglist, int pipe_ind){
         }
     }
     // parent
+    if (signal(SIGINT,SIG_DFL) == SIG_ERR){
+        perror("SIGINT handling failed");
+        exit(EXIT_FAILURE);
+    }
+    if (signal(SIGCHLD,SIG_DFL) == SIG_ERR){
+        perror("SIGCHLD handling failed");
+        exit(EXIT_FAILURE);
+    }
     close(pipe_ends[1]); //using the parent as the second end instead of forking twice
     int dup_res = dup2(pipe_ends[0],STDIN_FILENO);
         if (dup_res == -1){
@@ -260,13 +268,13 @@ int contains_pipe(int count, char** arglist){
     return -1;
 }
 
-int prepare(void){ //signal handling for SIGINT (Ctrl-C) 
+int prepare(void){ //signal handling for SIGINT (Ctrl-C) //should not use signal
     if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
-        perror("SIGINT handling failed");
+        perror("Error - failed to change signal SIGINT handling");
         return -1;
     }
-    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) { // dealing with zombies
-        perror("SIGCHLD handling failed");
+    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) { // dealing with zombies based on ERAN'S TRICK
+        perror("Error - failed to change signal SIGCHLD handling");
         return -1;
     }
     return 0;
