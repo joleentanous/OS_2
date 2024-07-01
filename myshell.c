@@ -166,7 +166,7 @@ int pipe_com(int count, char** arglist, int pipe_ind){
 
 int inputRedirect_com(int count, char** arglist){
     char* inp_file = arglist[count-1];
-    int fd = open(inp_file, O_WRONLY | O_CREAT | O_TRUNC, 0644); //Read and write for the user, read-only for group and others
+    int fd = open(inp_file, O_RDONLY); //Read and write for the user, read-only for group and others
     if (fd == -1){
         perror("failed to open input file!");
         return 0;
@@ -197,10 +197,10 @@ int inputRedirect_com(int count, char** arglist){
             close(fd);
             exit(EXIT_FAILURE); // 
         }
-        close(fd);
         int exec_res = execvp(arglist[0], arglist);
         if (exec_res == -1){
             perror("execvp failed!");// this means that the execvp returned, AKA it failed
+            close(fd);
             exit(EXIT_FAILURE); // maybe use: return 0
         } 
     }
