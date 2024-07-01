@@ -117,26 +117,35 @@ int pipe_com(int count, char** arglist, int pipe_ind){
         }
     }
     // parent
-    if (signal(SIGINT,SIG_DFL) == SIG_ERR){
-        perror("SIGINT handling failed");
-        exit(EXIT_FAILURE);
+    pid_t pid2 = fork(); //second child process
+    if (pid2 == -1) { // fork failed
+        perror("Fork failed!");
+        return 0;
     }
-    if (signal(SIGCHLD,SIG_DFL) == SIG_ERR){
-        perror("SIGCHLD handling failed");
-        exit(EXIT_FAILURE);
-    }
-    close(pipe_ends[1]); //using the parent as the second end instead of forking twice
-    int dup_res = dup2(pipe_ends[0],STDIN_FILENO);
+    if (pid2 == 0) { // Second child process
+        if (signal(SIGINT,SIG_DFL) == SIG_ERR){
+            perror("SIGINT handling failed");
+            exit(EXIT_FAILURE);
+        }
+        if (signal(SIGCHLD,SIG_DFL) == SIG_ERR){
+            perror("SIGCHLD handling failed");
+            exit(EXIT_FAILURE);
+        }
+        close(pipe_ends[1]);
+        int dup_res = dup2(pipe_ends[0],STDIN_FILENO);
         if (dup_res == -1){
             perror("dup2 failed on stdin!");
-            return 0; // maybe use: exit(EXIT_FAILURE)
+            exit(EXIT_FAILURE); 
         }
-    close(pipe_ends[0]);
-    int exec_res = execvp(arglist[pipe_ind + 1], arglist + pipe_ind + 1);
+        close(pipe_ends[0]);
+        int exec_res = execvp(arglist[pipe_ind + 1], arglist + pipe_ind + 1);
         if (exec_res == -1){
             perror("execvp failed!");// this means that the execvp returned, AKA it failed
-            return 0; // maybe use: exit(EXIT_FAILURE)
+            exit(EXIT_FAILURE); 
         }
+    }
+    close(pipefd[0]);
+    close(pipefd[1]);
     pid_t wait_res = waitpid(pid, NULL, 0);
     if (wait_res == -1){
         if ((errno != ECHILD) && (errno != EINTR)){
@@ -144,7 +153,13 @@ int pipe_com(int count, char** arglist, int pipe_ind){
             return 0;
         }
     }
-
+    pid_t wait_res = waitpid(pid2, NULL, 0);
+    if (wait_res == -1){
+        if ((errno != ECHILD) && (errno != EINTR)){
+            perror("Waitpid failed!");
+            return 0;
+        }
+    }
     return 1;
 }
 
