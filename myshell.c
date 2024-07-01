@@ -144,8 +144,8 @@ int pipe_com(int count, char** arglist, int pipe_ind){
             exit(EXIT_FAILURE); 
         }
     }
-    close(pipefd[0]);
-    close(pipefd[1]);
+    close(pipe_ends[0]);
+    close(pipe_ends[1]);
     pid_t wait_res = waitpid(pid, NULL, 0);
     if (wait_res == -1){
         if ((errno != ECHILD) && (errno != EINTR)){
