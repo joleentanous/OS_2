@@ -260,13 +260,13 @@ int contains_pipe(int count, char** arglist){
     return -1;
 }
 
-int prepare(void){ //signal handling for SIGINT (Ctrl-C) //should not use signal
+int prepare(void){ //signal handling for SIGINT (Ctrl-C) 
     if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
-        perror("Error - failed to change signal SIGINT handling");
+        perror("SIGINT handling failed");
         return -1;
     }
-    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) { // dealing with zombies based on ERAN'S TRICK
-        perror("Error - failed to change signal SIGCHLD handling");
+    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) { // dealing with zombies
+        perror("SIGCHLD handling failed");
         return -1;
     }
     return 0;
